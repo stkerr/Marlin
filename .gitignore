@@ -1,0 +1,7 @@
+build/*
+dist/*
+libc.S
+libc.lib.so
+nbproject/*
+
+.dep.inc
