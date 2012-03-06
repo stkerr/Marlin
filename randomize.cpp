@@ -57,19 +57,20 @@ map<string, list<jumppatching*>* >* prepare_patch_database(map<string, int> relo
     map<string, list<jumppatching*>* >* patch_db = new map<string, list<jumppatching*>* >;
     
     patch thunkcx_patch;
-    thunkcx_patch.library_offset = relocations["rand"];
-    
     strcpy(thunkcx_patch.function_name, "rand");
+    strcpy(thunkcx_patch.dest_function_name, "thunk_cx");
     thunkcx_patch.offset = 1; // 1 byte in
-    thunkcx_patch.patch_length = 4; // 4 byte jump patch
-    
-    strcpy(thunkcx_patch.function_name, "thunkcx");
-    thunkcx_patch.dest_function = jumppatching::thunk_cx_offset;
     thunkcx_patch.dest_offset = 0;
-    thunkcx_patch.in_plt = false;
+    
+    patch dorand_patch;
+    strcpy(dorand_patch.function_name, "rand");
+    strcpy(dorand_patch.dest_function_name, "do_rand");
+    dorand_patch.offset = 22;
+    dorand_patch.dest_offset = 0;
     
     jumppatching* rand_patch = new jumppatching();
     rand_patch->function_call_patches.push_front(thunkcx_patch);
+    rand_patch->function_call_patches.push_front(dorand_patch);
 //    rand_patch.reelative_jump_patches.push_front(do_rand_patch);
     
             
@@ -153,10 +154,6 @@ int randomize_functions(unsigned char *buffer, char* randomMapPath, list<text_sy
                 }
 
                 /* Record the relocation for jump patching later */
-                //int erased = current_addresses.erase((char*)(it->symbolName));
-                //current_addresses.insert(pair<char*, int>((char*)(it->symbolName), space.address));
-                //cout << "Erased: " << erased << endl;
-
                 current_addresses[(it->symbolName)] =  space.address;
 
                 relocations.insert(pair<char*, int>(it->symbolName, space.address));
@@ -216,8 +213,7 @@ int randomize_functions(unsigned char *buffer, char* randomMapPath, list<text_sy
     cout << "Beginning jump patching" << endl;
     cout << endl;
 
-    //bool lowlevel_patch(unsigned char *buffer, int offset, int dest)
-    //lowlevel_patch(buffer, )
+    
 
     /* Perform the jump patching phase */
     map<string, list<jumppatching*>* >* patch_database = prepare_patch_database(relocations);
@@ -232,21 +228,22 @@ int randomize_functions(unsigned char *buffer, char* randomMapPath, list<text_sy
 
             if(patch_database->count((*it).symbolName) == 0)
             {
-                cout << "Could not find symbol: " << (*it).symbolName << " in patch database" << endl;
+                cout << "No patches for symbol: " << (*it).symbolName << " in patch database" << endl;
                 continue;
             }
-
-            if(strcmp((*it).symbolName, "rand") != 0)
-                continue;
+            else
+            {
+                cout << "Patches found for symbol " << (*it).symbolName << endl;
+            }
 
             int new_location = relocations.at(it->symbolName);
 
             bool patch_results;
 
             // hardcoded for rand()
-            patch_results = lowlevel_patch(buffer, new_location + 1, jumppatching::thunk_cx_offset);    
-            patch_results = lowlevel_patch(buffer, new_location + 22, current_addresses["do_rand"]);    
-            continue;
+            //patch_results = lowlevel_patch(buffer, current_addresses[(*it).symbolName] + 1, jumppatching::thunk_cx_offset);    
+            //patch_results = lowlevel_patch(buffer, current_addresses[(*it).symbolName] + 22, current_addresses["do_rand"]);    
+            //continue;
 
             //map<char*, list<jumppatching*> >::iterator temp_it = patch_database.find((*it).symbolName);
             //if(temp_it == NULL)
@@ -257,8 +254,15 @@ int randomize_functions(unsigned char *buffer, char* randomMapPath, list<text_sy
             for(patch_it = patches->begin(); patch_it != patches->end(); patch_it++)
             {
                 /* Grab the patches that refer to jumps to a function */
-                //patch function_patch = (*patch_it)->function_call_patches.front();
-
+                list<patch> function_patches = (*patch_it)->function_call_patches;
+                
+                list<patch>::iterator function_it;
+                for(function_it = function_patches.begin(); function_it != function_patches.end(); function_it++)
+                {
+                    lowlevel_patch(buffer, 
+                            current_addresses[function_it->function_name] + function_it->offset, 
+                            current_addresses[function_it->dest_function_name] + function_it->dest_offset);
+                }
                 
             }            
             

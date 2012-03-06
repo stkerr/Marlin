@@ -1,4 +1,5 @@
 #include "text_symbols.h"
+#include "jumppatching.h"
 #include <map>
 #include <iostream>
 
@@ -25,7 +26,7 @@ bool text_symbol_compare(text_symbol first, text_symbol second)
 
 void initialize_current_addresses()
 {
-	current_addresses.insert(pair<char*, int>((char*)"_ZN6Genode5Alarm8on_alarmEv", 0x0001e5d0));
+    current_addresses.insert(pair<char*, int>((char*)"_ZN6Genode5Alarm8on_alarmEv", 0x0001e5d0));
     current_addresses.insert(pair<char*, int>((char*)"_ZN6Genode15Alarm_scheduler23_unsynchronized_enqueueEPNS_5AlarmE", 0x0001e5e0));
     current_addresses.insert(pair<char*, int>((char*)"_ZN6Genode15Alarm_scheduler23_unsynchronized_dequeueEPNS_5AlarmE", 0x0001e660));
     current_addresses.insert(pair<char*, int>((char*)"_ZN6Genode15Alarm_scheduler18_get_pending_alarmEv", 0x0001e6c0));
@@ -1923,4 +1924,7 @@ void initialize_current_addresses()
     current_addresses.insert(pair<char*, int>((char*)"__moddi3", 0x00090750));
     current_addresses.insert(pair<char*, int>((char*)"__udivdi3", 0x00090950));
     current_addresses.insert(pair<char*, int>((char*)"__umoddi3", 0x00090a80));
+    
+    current_addresses.insert(pair<char*, int>((char*)"thunk_bx", jumppatching::thunk_bx_offset));
+    current_addresses.insert(pair<char*, int>((char*)"thunk_cx", jumppatching::thunk_cx_offset));
 }
