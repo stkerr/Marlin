@@ -3,5 +3,7 @@ dist/*
 libc.S
 libc.lib.so
 nbproject/*
-
+*.o
 .dep.inc
+.DS_Store
+MarlinStaticProcessor

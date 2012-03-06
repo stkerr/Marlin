@@ -92,9 +92,9 @@ int main(int argc, char** argv)
     unsigned char * libc = read_libc((char*) "/Users/stkerr/Documents/Research/Marlin/libc.lib.so", &length);
 
     list<text_symbol> minimizeList, randomizeList;
-    minimizeList.push_back(text_symbols::rand);
-    minimizeList.push_back(text_symbols::do_rand);
-    minimizeList.push_back(text_symbols::rand_r);
+
+    initialize_current_addresses();
+
     minimizeList.push_back(text_symbols::execl);
     minimizeList.push_back(text_symbols::execle);
     minimizeList.push_back(text_symbols::execlp);
@@ -117,6 +117,9 @@ int main(int argc, char** argv)
     randomizeList.push_back(text_symbols::abs);
     randomizeList.push_back(text_symbols::recv);
     randomizeList.push_back(text_symbols::send);
+    randomizeList.push_back(text_symbols::rand);
+//    randomizeList.push_back(text_symbols::do_rand);
+    randomizeList.push_back(text_symbols::rand_r);
 
     list<text_record*> randomizeResults;
     randomize_functions(libc, (char*)"/Users/stkerr/Documents/Research/Marlin/randomization.map", randomizeList, deadzones, &randomizeResults);
